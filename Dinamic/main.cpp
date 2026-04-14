@@ -35,40 +35,42 @@ const double eps = 1e-10;
 const int MOD = 998244353;
 const char nl = '\n';
 
+int n, k;
 int dp[100013][22];
+int a[100013];
+int cnt[100013];
 
 void rec(int l, int r, int opt_l, int opt_r, int j) {
-
+    if (l > r) return;
+    int mid = (l + r) / 2;
+    int opt = opt_l;
+    int sm = 0;
+    for (int i = opt_l; i <= mid; i++) {
+        sm += cnt[a[i]]++;
+    }
+    for (int i = opt_l; i <= min(mid, opt_r); i++) {
+        if (dp[mid][j] > dp[i - 1][j - 1] + sm) {
+            dp[mid][j] = dp[i - 1][j - 1] + sm;
+            opt = i;
+        }
+        sm -= --cnt[a[i]];
+    }
+    for (int i = min(mid, opt_r) + 1; i <= mid; i++) cnt[a[i]]--;
+    rec(l, mid - 1, opt_l, opt, j);
+    rec(mid + 1, r, opt, opt_r, j);
 }
 
 void solve() {
-   int n, k; cin >> n >> k;
-   vector<int> a(n);
-   for (int i = 0; i < n; i++) cin >> a[i];
-   vector<int> cnt(n + 1);
-   cnt[a[0]] = 1;
-   for (int i = 1; i < n; i++) {
-       cnt[a[i]]++;
-       dp[i][1] = dp[i - 1][1] + cnt[a[i]] - 1;
+   cin >> n >> k;
+   for (int i = 0; i <= n; i++) {
+       for (int j = 0; j <= k; j++) dp[i][j] = INF;
    }
-   for (int l = 2; l <= k; l++) {
-       for (int i = 0; i < n; i++) {
-           dp[i][l] = INF;
-           if (i < l - 1) {
-               continue;
-           }
-           cnt = vector<int>(n + 1);
-           int st = 0;
-           for (int j = l - 1; j <= i; j++) {
-               st += cnt[a[j]]++;
-           }
-           for (int j = l - 2; j < i; j++) {
-               dp[i][l] = min(dp[i][l], dp[j][l - 1] + st);
-               st -= --cnt[a[j + 1]];
-           }
-       }
+   dp[0][0] = 0;
+   for (int i = 0; i < n; i++) cin >> a[i + 1];
+   for (int i = 0; i < k; i++) {
+       rec(1, n, 1, n, i + 1);
    }
-   cout << dp[n - 1][k] << nl;
+   cout << dp[n][k];
 }
 
 signed main() {
