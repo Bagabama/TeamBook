@@ -1,0 +1,51 @@
+vector<int> tree[Ts];
+int used[N];
+int dp[N];
+int ans = 0;
+int n;
+
+void add(int val, int l, int r, int x, int lx, int rx) {
+    if (lx >= l and rx <= r) {
+        tree[x].push_back(val);
+        return;
+    }
+    if (lx >= r or rx <= l) return;
+    int mid = (lx + rx) / 2;
+    add(val, l, r, 2 * x + 1, lx, mid);
+    add(val, l, r, 2 * x + 2, mid, rx);
+}
+
+void dfs(int x, int lx, int rx) {
+    for (auto i : tree[x]) {
+        for (int j = n - i; j >= 0; j--) {
+            if (dp[j] == 0) continue;
+            if (!used[j + i]) ans++;
+            used[j + i] = 1;
+            dp[j + i] = (dp[j] + dp[j + i]) % MOD;
+        }
+    }
+    int mid = (lx + rx) / 2;
+    if (rx - lx > 1) {
+        dfs(2 * x + 1, lx, mid);
+        dfs(2 * x + 2, mid, rx);
+    }
+    for (auto i : tree[x]) {
+        for (int j = 0; j <= n - i; j++) {
+            dp[j + i] = (dp[j + i] + MOD - dp[j]) % MOD;
+        }
+    }
+}
+
+void solve() {
+    int q; cin >> n >> q;
+    for (int i = 0; i < q; i++) {
+        int l, r, w; cin >> l >> r >> w;
+        add(w, l - 1, r, 0, 0, n);
+    }
+    dp[0] = 1;
+    dfs(0, 0, n);
+    cout << ans << nl;
+    for (int i = 1; i <= n; i++) {
+        if (used[i]) cout << i << ' ';
+    }
+}
